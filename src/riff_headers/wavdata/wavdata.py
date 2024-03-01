@@ -4,6 +4,8 @@ import pathlib
 
 from datetime import datetime, timedelta
 
+from . import scott_chunk_dict, generate_scott_format
+
 
 class WavData:
     def __init__(self, filename: pathlib.Path) -> None:
@@ -13,7 +15,6 @@ class WavData:
         self.data_position: int
         self.scott_begin: int
         self.scott_end: int
-        self.scott_end_fillout: int
 
         self.riff_data: dict    = {}
         self.data_meta: dict    = {}
@@ -64,74 +65,75 @@ class WavData:
             with io.open(self.filename, 'rb') as fh:
                 fh.seek(self.scott_begin)
                 scott_data = struct.unpack(
-                    '<4slB43p3p4sc5shhhh6s6sbbchcBlHL12sLLlhh3s4sc3s4sc21s108s34s34s2sc4scb6sHHBLH3L',
-                    fh.read(381)
+                    generate_scott_format(),
+                    fh.read(432)
                 )
                 self.scott_data['scott']        = scott_data[0].decode('ascii')
                 self.scott_data['cksize']       = scott_data[1]
-                self.scott_data['attrib']       = bin(scott_data[2])
-                self.scott_data['title']        = scott_data[3].decode('utf-8', 'ignore')
-                self.scott_data['unknown1']     = scott_data[4]
-                self.scott_data['cart']         = scott_data[5].decode('ascii')
-                self.scott_data['padd']         = scott_data[6]
-                self.scott_data['asclen']       = scott_data[7].decode('ascii')
-                self.scott_data['start_seconds']= f'{scott_data[8]}.{scott_data[9]}'
-                self.scott_data['end_seconds']  = f'{scott_data[10]}.{scott_data[11]}'
+                self.scott_data['alter']        = scott_data[2]
+                self.scott_data['attrib']       = bin(scott_data[3])
+                self.scott_data['artnum']       = scott_data[4]
+                self.scott_data['title']        = scott_data[5].decode('ascii')
+                self.scott_data['cart']         = scott_data[6].decode('ascii')
+                self.scott_data['padd']         = scott_data[7]
+                self.scott_data['asclen']       = scott_data[8].decode('ascii')
+                self.scott_data['start_seconds']= f'{scott_data[9]}.{scott_data[10]}'
+                self.scott_data['end_seconds']  = f'{scott_data[11]}.{scott_data[12]}'
                 self.scott_data['start_time']   = self.convert_timestamp(
-                        scott_data[12],
-                        scott_data[14]
-                )
-                self.scott_data['end_time']     = self.convert_timestamp(
                         scott_data[13],
                         scott_data[15]
                 )
-                self.scott_data['digital']      = scott_data[16].decode('ascii')
-                self.scott_data['sampleRate']   = scott_data[17]
-                self.scott_data['stereo']       = scott_data[18].decode('ascii')
-                self.scott_data['compression']  = scott_data[19]
-                self.scott_data['eomstart']     = scott_data[20]
-                self.scott_data['eomlength']    = scott_data[21]
-                self.scott_data['attrib2']      = bin(scott_data[22])
-                self.scott_data['future1']       = scott_data[23]
-                self.scott_data['cfcolo']       = scott_data[24]
-                self.scott_data['ccolo']        = scott_data[25]
-                self.scott_data['segeompos']    = scott_data[26]
-                self.scott_data['vtstartsec']   = scott_data[27]
-                self.scott_data['vtstarthun']   = scott_data[28]
-                self.scott_data['pcat']         = scott_data[29]
-                self.scott_data['pcopy']        = scott_data[30]
-                self.scott_data['ppadd']        = scott_data[31]
-                self.scott_data['pocat']        = scott_data[32]
-                self.scott_data['pocopy']       = scott_data[33]
-                self.scott_data['popadd']       = scott_data[34]
-                self.scott_data['hrcanplay']    = "returns 168 b'1'"
-                self.scott_data['future2']      = scott_data[36].decode('ascii')
-                self.scott_data['artist']       = scott_data[37].decode('ascii')
-                self.scott_data['trivia']       = scott_data[38].decode('ascii')
-                self.scott_data['intro']        = scott_data[39].decode('ascii')
-                self.scott_data['end']          = scott_data[40].decode('ascii')
-                self.scott_data['year']         = scott_data[41].decode('ascii')
-                self.scott_data['obsolete2']    = scott_data[42]
-                self.scott_data['recorded']     = self.convert_timestamp(
-                        scott_data[44],
-                        scott_data[43]
+                self.scott_data['end_time']     = self.convert_timestamp(
+                        scott_data[14],
+                        scott_data[16]
                 )
-                self.scott_data['pitch']        = bin(scott_data[45])
-                self.scott_data['playlevel']    = bin(scott_data[46])
-                self.scott_data['lenvalid']     = scott_data[47]
-                self.scott_data['filelength']   = scott_data[48]
-                self.scott_data['newplaylevel'] = scott_data[49]
-                self.scott_data['chopsize']     = scott_data[50]
-                self.scott_data['vteomovr']     = scott_data[51]
-                self.scott_data['desiredlen']   = scott_data[52]
+                self.scott_data['digital']      = scott_data[17].decode('ascii')
+                self.scott_data['sampleRate']   = scott_data[18]
+                self.scott_data['stereo']       = scott_data[19].decode('ascii')
+                self.scott_data['compression']  = scott_data[20]
+                self.scott_data['eomstart']     = scott_data[21]
+                self.scott_data['eomlength']    = scott_data[22]
+                self.scott_data['attrib2']      = bin(scott_data[23])
+                self.scott_data['future1']      = scott_data[24]
+                self.scott_data['cfcolo']       = scott_data[25]
+                self.scott_data['ccolo']        = scott_data[26]
+                self.scott_data['segeompos']    = scott_data[27]
+                self.scott_data['vtstartsec']   = scott_data[28]
+                self.scott_data['vtstarthun']   = scott_data[29]
+                self.scott_data['pcat']         = scott_data[30]
+                self.scott_data['pcopy']        = scott_data[31]
+                self.scott_data['ppadd']        = scott_data[32]
+                self.scott_data['pocat']        = scott_data[33]
+                self.scott_data['pocopy']       = scott_data[34]
+                self.scott_data['popadd']       = scott_data[35]
+                self.scott_data['hrcanplay']    = ''
+                for x in range(36, 36 + 21, 1):
+                    self.scott_data['hrcanplay'] += str(scott_data[x])
+                self.scott_data['future2']      = scott_data[57]
+                self.scott_data['artist']       = scott_data[58]
+                self.scott_data['trivia']       = scott_data[59]
+                self.scott_data['intro']        = scott_data[60]
+                self.scott_data['end']          = scott_data[61]
+                self.scott_data['year']         = scott_data[62]
+                self.scott_data['obsolete2']    = scott_data[63]
+                self.scott_data['recorded']     = self.convert_timestamp(
+                        scott_data[65],
+                        scott_data[64]
+                )
+                self.scott_data['mpegrate']     = scott_data[66]
+                self.scott_data['pitch']        = bin(scott_data[67])
+                self.scott_data['playlevel']    = bin(scott_data[68])
+                self.scott_data['lenvalid']     = scott_data[69]
+                self.scott_data['filelength']   = scott_data[70]
+                self.scott_data['newplaylevel'] = scott_data[71]
+                self.scott_data['chopsize']     = scott_data[72]
+                self.scott_data['vteomovr']     = scott_data[73]
+                self.scott_data['desiredlen']   = scott_data[74]
+                self.scott_data['triggers']     = scott_data[75], scott_data[76], scott_data[77]
+                self.scott_data['category']     = scott_data[78]
+                self.scott_data['fillout']      = scott_data[79]
                 self.scott_end = fh.tell()
-                scraps = struct.unpack('<14s3s16s18s', fh.read(51))
-                self.scott_data['fillout1']     = scraps[0]
-                self.scott_data['category']     = scraps[1]
-                self.scott_data['fillout2']     = scraps[2]
-                self.scott_data['fillout3']     = scraps[3]
-                self.scott_end_fillout = fh.tell()
-                till_data = self.data_position - self.scott_end_fillout
+                till_data = self.data_position - self.scott_end
                 if till_data == 12:
                     fact_chunk = struct.unpack(f'<4sll', fh.read(till_data))
                     self.scott_data['fact_chunk']   = fact_chunk[0]

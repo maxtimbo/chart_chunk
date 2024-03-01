@@ -5,7 +5,7 @@ from pathlib import Path
 from wavdata.wavdata import WavData
 
 
-@click.group()
+@click.group(invoke_without_command=True)
 @click.argument('audio', type=click.Path(exists=True))
 @click.pass_context
 def cli(ctx, audio):
@@ -35,7 +35,6 @@ def cli(ctx, audio):
         if wav.is_scott:
             click.echo(f'Scott begin byte position: {wav.scott_begin}')
             click.echo(f'Scott end byte position: {wav.scott_end}')
-            click.echo(f'Scott end fillout byte position: {wav.scott_end_fillout}')
 
         click.echo(f'Data byte position: {wav.data_position}')
         ctx.ensure_object(dict)
