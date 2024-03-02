@@ -1,192 +1,127 @@
-scott_chunk_dict = {
-    'scot': {
-        'data_type': '4s',
-        'default': b'scot'
-    },
-    'ckSize': {
-        'data_type': 'l',
-        'default': 424
-    },
-    'alter': {
-        'data_type': 'b',
-        'default': 0
-    },
-    'attrib': {
-        'data_type': 'B',
-        'default': int('10000000', 2)
-    },
-    'artnum': {
-        'data_type': 'h',
-        'default': 0
-    },
-    'title': {
-        'data_type': '43s',
-        'default': ''.ljust(43)[:43]
-    },
-    'cart': {
-        'data_type': '4s',
-        'default': ''.ljust(4)[:4]
-    },
-    'padd': {
-        'data_type': 'c',
-        'default': ' '
-    },
-    'asclen': {
-        'data_type': '5s',
-        'default': ' 0:00'.rjust(5)[:5]
-    },
-    'start_seconds': {
-        'data_type': 'h',
-    },
-    'start_hundred': {
-        'data_type': 'h'
-    },
-    'end_seconds': {
-        'data_type': 'h'
-    },
-    'end_hundred': {
-        'data_type': 'h'
-    },
-    'start_date': {
-        'data_type': '6s'
-    },
-    'kill_date': {
-        'data_type': '6s'
-    },
-    'start_hour': {
-        'data_type': 'b'
-    },
-    'kill_hour': {
-        'data_type': 'b'
-    },
-    'digital': {
-        'data_type': 'c'
-    },
-    'sampleRate': {
-        'data_type': 'h'
-    },
-    'stereo': {
-        'data_type': 'c'
-    },
-    'compression': {
-        'data_type': 'B'
-    },
-    'eomstart': {
-        'data_type': 'l'
-    },
-    'eomlength': {
-        'data_type': 'h'
-    },
-    'attrib2': {
-        'data_type': 'L'
-    },
-    'future1': {
-        'data_type': '12s'
-    },
-    'cfcolo': {
-        'data_type': 'L'
-    },
-    'ccolo': {
-        'data_type': 'L'
-    },
-    'segeompos': {
-        'data_type': 'l'
-    },
-    'vtstartsec': {
-        'data_type': 'h'
-    },
-    'vtstarthun': {
-        'data_type': 'h'
-    },
-    'pcat': {
-        'data_type': '3s'
-    },
-    'pcopy': {
-        'data_type': '4s'
-    },
-    'ppadd': {
-        'data_type': 'c'
-    },
-    'pocat': {
-        'data_type': '3s'
-    },
-    'pocopy': {
-        'data_type': '4s'
-    },
-    'popadd': {
-        'data_type': 'c'
-    },
-    'hrcanplay': {
-        'data_type': '21B'
-    },
-    'future2': {
-        'data_type': '108s'
-    },
-    'artist': {
-        'data_type': '34s'
-    },
-    'trivia': {
-        'data_type': '34s'
-    },
-    'intro': {
-        'data_type': '2s'
-    },
-    'end': {
-        'data_type': 'c'
-    },
-    'year': {
-        'data_type': '4s'
-    },
-    'obsolete2': {
-        'data_type': 'c'
-    },
-    'record_hour': {
-        'data_type': 'b'
-    },
-    'record_date': {
-        'data_type': '6s'
-    },
-    'mpegrate': {
-        'data_type': 'h'
-    },
-    'pitch': {
-        'data_type': 'H'
-    },
-    'playlevel': {
-        'data_type': 'H'
-    },
-    'lenvalid': {
-        'data_type': 'B'
-    },
-    'filelength': {
-        'data_type': 'L'
-    },
-    'newplaylevel': {
-        'data_type': 'H'
-    },
-    'chopsize': {
-        'data_type': 'L'
-    },
-    'vteomovr': {
-        'data_type': 'L'
-    },
-    'desiredlen': {
-        'data_type': 'L'
-    },
-    'triggers': {
-        'data_type': '3L'
-    },
-    'category': {
-        'data_type': '4s'
-    },
-    'fillout': {
-        'data_type': '33s'
-    },
+from struct import calcsize
+
+__all__ = [
+    'riff_chunk',
+    'fmt_chunk',
+    'pcm_chunk',
+    'mpeg_chunk',
+    'scott_chunk',
+    'fact_chunk',
+    'data_chunk',
+    'generate_format'
+]
+
+riff_chunk = {
+    'riff':             {'format': '4s'},
+    'size':             {'format': 'l'},
+    'type':             {'format': '4s'}
 }
 
-def generate_scott_format():
-    format_string = '<'
-    for k, v in scott_chunk_dict.items():
-        format_string += v['data_type']
+fmt_chunk = {
+    'fmt':              {'format': '4s'},
+    'fmtsize':          {'format': 'l'}
+}
 
-    return format_string
+pcm_chunk = {
+    'tag':              {'format': 'h'},
+    'chan':             {'format': 'h'},
+    'sampleRate':       {'format': 'l'},
+    'transfrate':       {'format': 'l'},
+    'align':            {'format': 'h'},
+    'bitsPerSample':    {'format': 'h'}
+}
+
+mpeg_chunk = pcm_chunk | {
+    'extra':            {'format': 'h'},
+    'layer':            {'format': 'h'},
+    'bitrate':          {'format': 'l'},
+    'mode':             {'format': 'h'},
+    'extmode':          {'format': 'h'},
+    'emphasis':         {'format': 'h'},
+    'flags':            {'format': 'h'},
+    'PTSlow':           {'format': 'l'},
+    'PTShigh':          {'format': 'l'}
+}
+
+fact_chunk = {
+    'fact':             {'format': '4s'},
+    'factsize':         {'format': 'l'},
+    'numsamples':       {'format': 'l'}
+}
+
+data_chunk = {
+    'data':             {'format': '4s'},
+    'datasize':         {'format': 'l'}
+}
+
+scott_chunk = {
+    'scot':             {'format': '4s'},
+    'ckSize':           {'format': 'l'},
+    'alter':            {'format': 'b'},
+    'attrib':           {'format': 'B'},
+    'artnum':           {'format': 'h'},
+    'title':            {'format': '43s'},
+    'cart':             {'format': '4s'},
+    'padd':             {'format': 'c'},
+    'asclen':           {'format': '5s'},
+    'start_seconds':    {'format': 'h',},
+    'start_hundred':    {'format': 'h'},
+    'end_seconds':      {'format': 'h'},
+    'end_hundred':      {'format': 'h'},
+    'start_date':       {'format': '6s'},
+    'kill_date':        {'format': '6s'},
+    'start_hour':       {'format': 'b'},
+    'kill_hour':        {'format': 'b'},
+    'digital':          {'format': 'c'},
+    'sampleRate':       {'format': 'h'},
+    'stereo':           {'format': 'c'},
+    'compression':      {'format': 'B'},
+    'eomstart':         {'format': 'l'},
+    'eomlength':        {'format': 'h'},
+    'attrib2':          {'format': 'L'},
+    'future1':          {'format': '12s'},
+    'cfcolo':           {'format': 'L'},
+    'ccolo':            {'format': 'L'},
+    'segeompos':        {'format': 'l'},
+    'vtstartsec':       {'format': 'h'},
+    'vtstarthun':       {'format': 'h'},
+    'pcat':             {'format': '3s'},
+    'pcopy':            {'format': '4s'},
+    'ppadd':            {'format': 'c'},
+    'pocat':            {'format': '3s'},
+    'pocopy':           {'format': '4s'},
+    'popadd':           {'format': 'c'},
+    'hrcanplay':        {'format': '21s'},
+    'future2':          {'format': '108s'},
+    'artist':           {'format': '34s'},
+    'trivia':           {'format': '34s'},
+    'intro':            {'format': '2s'},
+    'end':              {'format': 'c'},
+    'year':             {'format': '4s'},
+    'obsolete2':        {'format': 'c'},
+    'record_hour':      {'format': 'b'},
+    'record_date':      {'format': '6s'},
+    'mpegrate':         {'format': 'h'},
+    'pitch':            {'format': 'H'},
+    'playlevel':        {'format': 'H'},
+    'lenvalid':         {'format': 'B'},
+    'filelength':       {'format': 'L'},
+    'newplaylevel':     {'format': 'H'},
+    'chopsize':         {'format': 'L'},
+    'vteomovr':         {'format': 'L'},
+    'desiredlen':       {'format': 'L'},
+    'triggers1':        {'format': 'L'},
+    'triggers2':        {'format': 'L'},
+    'triggers3':        {'format': 'L'},
+    'category':         {'format': '4s'},
+    'fillout':          {'format': '33s'},
+}
+
+def generate_format(chunk: dict) -> str:
+    format_string = '<'
+    for k, v in chunk.items():
+        format_string += v['format']
+
+    size = calcsize(format_string)
+
+    return format_string, size

@@ -17,7 +17,8 @@ def cli(ctx, audio):
         for k, v in wav.riff_data.items():
             click.echo(f'{k:<20}: {v}')
 
-
+        wav.get_scott_data()
+        wav.get_data_size()
         click.echo(f'\n{"DATA META":^40}')
         for k, v in wav.data_meta.items():
             click.echo(f'{k:<20}: {v}')
@@ -31,12 +32,7 @@ def cli(ctx, audio):
         else:
             click.echo(f'\n{"The file does not have a scott header":^40}')
 
-        click.echo(f'End of riff/fmt chunk: {wav.riff_fmt_end}')
-        if wav.is_scott:
-            click.echo(f'Scott begin byte position: {wav.scott_begin}')
-            click.echo(f'Scott end byte position: {wav.scott_end}')
 
-        click.echo(f'Data byte position: {wav.data_position}')
         ctx.ensure_object(dict)
         ctx.obj['wav'] = wav
 
