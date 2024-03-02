@@ -12,11 +12,6 @@ class WavData:
         self.filename = filename
         self.header = self.get_header()
 
-        self.riff_fmt_end: int
-        self.data_position: int
-        self.scott_begin: int
-        self.scott_end: int
-
         self.riff_data: dict    = {}
         self.data_meta: dict    = {}
         self.scott_data: dict   = {}
@@ -29,7 +24,7 @@ class WavData:
 
         return header
 
-    def get_riff_data(self):
+    def get_riff_data(self) -> None:
         def generate_riff(chunk: dict) -> None:
             f, s = generate_format(chunk)
             d = struct.unpack(f, self.header.read(s))
@@ -45,7 +40,7 @@ class WavData:
         else:
             generate_riff(pcm_chunk)
 
-    def get_scott_data(self):
+    def get_scott_data(self) -> None:
         self.header.seek(0)
         index = self.header.read().find(b'scot')
         if index != -1:
@@ -57,9 +52,6 @@ class WavData:
 
             skip_fields = []
             skip_fields.extend(range(9, 17, 1))
-            #skip_fields.extend(range(36, 36 + 21, 1))
-            #skip_fields.extend(range(65, 66, 1))
-            print(skip_fields)
 
             for i, field, data in zip(range(len(scott_data)), scott_chunk, scott_data):
                 if 'attrib' in field:
@@ -158,7 +150,7 @@ class WavData:
         else:
             self.is_scott = False
 
-    def get_data_size(self):
+    def get_data_size(self) -> None:
         self.header.seek(0)
         index = self.header.read().find(b'data')
         try:
@@ -188,7 +180,7 @@ class WavData:
 
 
     @staticmethod
-    def convert_timestamp(date, hour_value):
+    def convert_timestamp(date: str, hour_value: int) -> datetime:
         hour = hour_value + 128
         hours = f'{hour:02d}{0:02d}{0:02d}'
         date = date.decode('ascii')
