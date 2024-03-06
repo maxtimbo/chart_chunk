@@ -5,7 +5,7 @@ import wave
 
 from datetime import datetime, timedelta
 
-from . import *
+from .defines import *
 
 
 class CartChunk:
