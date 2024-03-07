@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python_cart_chunk"
+version = "0.0.1b1"
+requires-python = ">= 3.10"
+authors = [
+    {name = "Tim Finley", email = "tim.finley24@gmail.com"},
+]
+maintainers = [
+    {name = "Tim Finley", email = "tim.finley24@gmail.com"},
+]
+description = "Add CART CHUNK to wave files."
+readme = "README.md"
+license = {file = "LICENSE"}

@@ -5,7 +5,7 @@ import wave
 
 from datetime import datetime, timedelta
 
-from .defines import *
+from defines import *
 
 
 class CartChunk:
@@ -21,6 +21,9 @@ class CartChunk:
         self.data_end: int      = 0
 
         self.is_scott: bool     = False
+        self.get_riff_data()
+        self.get_data_size()
+        self.get_scott_data()
 
     def get_header(self) -> io.BytesIO:
         with open(self.filename, 'rb') as fh:
