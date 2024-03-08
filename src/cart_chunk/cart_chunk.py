@@ -5,7 +5,10 @@ import wave
 
 from datetime import datetime, timedelta
 
-from defines import *
+try:
+    from defines import *
+except:
+    from .defines import *
 
 
 class CartChunk:
@@ -109,7 +112,7 @@ class CartChunk:
         except:
             raise
 
-    def write_copy(self, artist, title):
+    def write_copy(self, new_file: pathlib.Path, artist: str, title: str) -> None:
         f, s = generate_format(riff_chunk)
 
         self.riff_data['size'] = self.data_meta['datasize'] + 470
@@ -152,7 +155,7 @@ class CartChunk:
         f, s = generate_format(scott_chunk)
         scott = struct.pack(f, *self.scott_data.values())
 
-        with open('testNew.wav', 'wb') as fh:
+        with open(new_file, 'wb') as fh:
             fh.write(riff)
             fh.write(fmt)
             fh.write(scott)
