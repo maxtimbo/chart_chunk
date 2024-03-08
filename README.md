@@ -1,22 +1,48 @@
-## RIFF Header Reader
+## Python CART CHUNK
 
-This is just a quick test script for reading the scott header of a RIFF Wave container. To use, simply clone this repo and execute `scott-header.py {wave_file.wav}` to see the results.
+### Installation
+
+Clone this repo and install using pip:
 
 ```
-$ git clone https://github.com/maxtimbo/riff_headers
-$ cd riff_headers
-$ python3 scott-header.py SampleWav.wav
-$ python3 scott-header.py NEW1234.wav
-$ python3 scott-header.py SP1234.wav
+$ git clone https://github.com/maxtimbo/python_cart_chunk
+$ cd python_cart_chunk
+$ pip install .
 ```
 
-The audio files are each a little different:
+### Usage
 
-- SampleWav.wav has no scot headers
-- NEW1234.wav has scot headers created by Audition v3
-- SP1234.wav has processed headers
+You can use the CartChunk class to read CART CHUNK headers as well as riff and fmt data of a wave file:
 
-Here's how I think this will go from here:
+```
+from cart_chunk import CartChunk
+from pathlib import Path
 
-Add ffmpeg to analyse the wav file for length. This is necessary for the asclen parameter.  
-There will need a mechanism for adding the 424 + 9 bytes after the RIFF and FMT structs. 9 bytes tells interpreting software that scot header is present. the 424 bytes defines the scot header metadata. The main things that should be added are the `artist` and `title` fields. But other fields must be either spaces or null characters for the header to be valid. Other fields can be added later, such as `kill_dates`, `eomstart` and `eomlength`, `start_seconds` and `end_seconds`, as well as `cart` and 
+src = Path('/path/to/wave/file.wav')
+
+wav = CartChunk(src)
+
+if wav.is_scott:
+    for key, value in wav.scott_data.items():
+        print(f'{key:<20}: {value}')
+else:
+    print('Does not contain CART CHUNK')
+
+for key, value in wav.riff_data.items():
+    print(f'{key:<20}: {value}')
+
+for key, value in wav.fmt_data.items():
+    print(f'{key:<20}: {value}')
+
+for key, value in wav.data_meta.items():
+    print(f'{key:<20}: {value}')
+```
+
+Use the CartChunk class to write a new copy with the CART CHUNK (currently, only artist and title fields are supported):
+
+
+```
+new_file = Path('/path/to/new/file.wav')
+
+wav.write_copy(new_file, 'artist', 'title')
+```
