@@ -3,12 +3,27 @@ import struct
 import pathlib
 import wave
 
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 try:
     from defines import *
 except:
     from .defines import *
+
+
+@dataclass
+class NewCart:
+    filename: pathlib.Path
+    artist: str             = None
+    title: str              = None
+    category: str           = None
+    cart: str               = None
+    intro: float            = None
+    sec: float              = None
+    eom: float              = None
+    start_timestamp: tuple  = None
+    end_timestamp: tuple    = None
 
 
 class CartChunk:
@@ -112,7 +127,7 @@ class CartChunk:
         except:
             raise
 
-    def write_copy(self, new_file: pathlib.Path, artist: str, title: str) -> None:
+    def write_copy(self, new_file: NewCart) -> None:
         f, s = generate_format(riff_chunk)
 
         self.riff_data['size'] = self.data_meta['datasize'] + 470
@@ -120,8 +135,6 @@ class CartChunk:
         f, s = generate_format(fmt_chunk | pcm_chunk)
         f += 'xx'
         self.fmt_data['fmtsize'] = 18
-        #for k, v in new_mpeg_chunk.items():
-        #    self.fmt_data[k] = 0
 
         fmt = struct.pack(f, *self.fmt_data.values())
 
@@ -131,38 +144,74 @@ class CartChunk:
         for k, v in scott_chunk.items():
             self.scott_data[k] = v['data']
 
-        self.scott_data['artist'] = artist.ljust(34).encode()
-        self.scott_data['title'] = title.ljust(43).encode()
-        if self.fmt_data['chan'] == 1:
-            self.scott_data['stereo'] = b'M'
-        elif self.fmt_data['chan'] == 2:
-            self.scott_data['stereo'] = b'S'
+        if new_file.artist is not None:
+            self.scott_data['artist'] = new_file.artist.ljust(34).encode()
 
-        sec = datetime.strftime(datetime.strptime(f'{self.wave_data["duration"]:.2f}', '%S.%f'), '%M:%S')
+        if new_file.title is not None:
+            self.scott_data['title'] = new_file.title.ljust(43).encode()
 
-        self.scott_data['asclen'] = sec.rjust(5).encode()
+        if new_file.cart is not None:
+            self.scott_data['cart'] = new_file.cart.encode()
+
+        if new_file.category is not None:
+            self.scott_data['category'] = new_file.category.encode()
+
+        duration = datetime.strftime(datetime.strptime(f'{self.wave_data["duration"]:.2f}', '%S.%f'), '%M:%S')
+
+        # intro int
+        if new_file.intro is not None:
+            if new_file.intro > self.wave_data['duration']:
+                raise
+            else:
+                self.scott_data['start_seconds'] = int(new_file.intro)
+                self.scott_data['start_hundreds'] = int((new_file.intro % 1) * 100)
+
+        # sec float
+        if new_file.sec is not None:
+            sec = datetime.strftime(datetime.strptime(f'{new_file.sec:.2f}', '%S.%f'), '%M:%S')
+            if sec > duration:
+                raise
+            else:
+                self.scott_data['asclen'] = sec.rjust(5).encode()
+        else:
+            self.scott_data['asclen'] = duration.rjust(5).encode()
+
+        # eom float
+
         self.scott_data['end_seconds'] = int(self.wave_data['duration'])
         self.scott_data['end_hundred'] = int((self.wave_data['duration'] % 1) * 100)
         self.scott_data['eomstart'] = int(self.wave_data['duration'] * 10)
         self.scott_data['eomlength'] = int(((self.wave_data['duration'] * 10) % 1) * 100)
 
+        if new_file.start_timestamp is not None:
+            self.scott_data['start_date'] = new_file.start_timestamp[0]
+            self.scott_data['start_hour'] = new_file.start_timestamp[1]
+
+        if new_file.end_timestamp is not None:
+            self.scott_data['kill_date'] = new_file.end_timestamp[0]
+            self.scott_data['kill_hour'] = new_file.end_timestamp[1]
+
+        self.scott_data['sampleRate'] = int(self.fmt_data['sampleRate'] / 100)
+
+        if self.fmt_data['chan'] == 1:
+            self.scott_data['stereo'] = b'M'
+        elif self.fmt_data['chan'] == 2:
+            self.scott_data['stereo'] = b'S'
+
         record_date = datetime.fromtimestamp(self.filename.stat().st_ctime)
         self.scott_data['record_date'] = datetime.strftime(record_date, "%y%m%d").encode()
         self.scott_data['record_hour'] = int(datetime.strftime(record_date, "%H")) - 128
 
-        self.scott_data['sampleRate'] = int(self.fmt_data['sampleRate'] / 100)
 
         f, s = generate_format(scott_chunk)
         scott = struct.pack(f, *self.scott_data.values())
 
-        with open(new_file, 'wb') as fh:
+        with open(new_file.filename, 'wb') as fh:
             fh.write(riff)
             fh.write(fmt)
             fh.write(scott)
             fh.write(data)
             fh.write(self.audio)
-
-
 
     @staticmethod
     def convert_timestamp(date: str, hour_value: int) -> datetime:

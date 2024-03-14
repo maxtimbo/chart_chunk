@@ -71,66 +71,66 @@ data_chunk = {
 }
 
 scott_chunk = {
-    'scot':             {'format': '4s', 'data': b'scot'},          # ?
-    'ckSize':           {'format': 'l', 'data': 424},               # ?
-    'alter':            {'format': 'b', 'data': 0},                 # ?
-    'attrib':           {'format': 'B', 'data': 128},               # ?
-    'artnum':           {'format': 'h', 'data': 0},                 # ?
-    'title':            {'format': '43s', 'data': b' ' * 43},       # ?
-    'cart':             {'format': '4s', 'data': b' ' * 4},         # ?
-    'padd':             {'format': 'c', 'data': b' '},              # ?
-    'asclen':           {'format': '5s', 'data': b"99:99"},         # SEC Tone? MM:SS
-    'start_seconds':    {'format': 'h', 'data': 0},                 # ?
-    'start_hundred':    {'format': 'h', 'data': 0},                 # ?
-    'end_seconds':      {'format': 'h', 'data': 9999},              # ?
-    'end_hundred':      {'format': 'h', 'data': 9999},              # ?
-    'start_date':       {'format': '6s', 'data': b"0" * 6},         # ?
-    'kill_date':        {'format': '6s', 'data': b"9" * 6},         # ?
-    'start_hour':       {'format': 'b', 'data': -128},              # ?
-    'kill_hour':        {'format': 'b', 'data': -128},              # ?
-    'digital':          {'format': 'c', 'data': b'A'},              # ?
-    'sampleRate':       {'format': 'h', 'data': 0},                 # ?
-    'stereo':           {'format': 'c', 'data': b'S'},              # ?
-    'compression':      {'format': 'B', 'data': 10},                # ?
-    'eomstart':         {'format': 'l', 'data': 99},                # ?
-    'eomlength':        {'format': 'h', 'data': 0},                 # ?
-    'attrib2':          {'format': 'L', 'data': 264},               # ? 
-    'future1':          {'format': '12s', 'data': bytes([0] * 12)}, # ?
-    'cfcolo':           {'format': 'L', 'data': 0},                 # ? 
-    'ccolo':            {'format': 'L', 'data': 0},                 # ?
-    'segeompos':        {'format': 'l', 'data': 0},                 # ?
-    'vtstartsec':       {'format': 'h', 'data': 0},
-    'vtstarthun':       {'format': 'h', 'data': 0},
-    'pcat':             {'format': '3s', 'data': b" " * 3},
-    'pcopy':            {'format': '4s', 'data': b" " * 4},
-    'ppadd':            {'format': 'c', 'data': b' '},
-    'pocat':            {'format': '3s', 'data': b" " * 3},
-    'pocopy':           {'format': '4s', 'data': b" " * 4},
-    'popadd':           {'format': 'c', 'data': b' '},
-    'hrcanplay':        {'format': '21s', 'data': bytes([255] * 21)},
-    'future2':          {'format': '108s', 'data': bytes([0] *108)},
-    'artist':           {'format': '34s', 'data': b" " * 34},
-    'trivia':           {'format': '34s', 'data': b" " * 34},
-    'intro':            {'format': '2s', 'data': b" " * 2},
-    'end':              {'format': 'c', 'data': b' '},
-    'year':             {'format': '4s', 'data': b" " * 4},
-    'obsolete2':        {'format': 'c', 'data': bytes([0])},
-    'record_hour':      {'format': 'b', 'data': 0},
-    'record_date':      {'format': '6s', 'data': b" " * 6},
-    'mpegrate':         {'format': 'h', 'data': 0},
-    'pitch':            {'format': 'H', 'data': 32768},
-    'playlevel':        {'format': 'H', 'data': 21845},
-    'lenvalid':         {'format': 'B', 'data': 0},
-    'filelength':       {'format': 'L', 'data': 0},
-    'newplaylevel':     {'format': 'H', 'data': 33768},
-    'chopsize':         {'format': 'L', 'data': 0},
-    'vteomovr':         {'format': 'L', 'data': 0},
-    'desiredlen':       {'format': 'L', 'data': 0},
-    'triggers1':        {'format': 'L', 'data': 0},
-    'triggers2':        {'format': 'L', 'data': 0},
-    'triggers3':        {'format': 'L', 'data': 0},
-    'category':         {'format': '4s', 'data': b" " * 4},
-    'fillout':          {'format': '33s', 'data': bytes([0] * 33)},
+    'scot':             {'format': '4s', 'data': b'scot'},
+    'ckSize':           {'format': 'l', 'data': 424},
+    'alter':            {'format': 'b', 'data': 0},                     # Padding
+    'attrib':           {'format': 'B', 'data': 128},                   # ?
+    'artnum':           {'format': 'h', 'data': 0},                     # Padding
+    'title':            {'format': '43s', 'data': b' ' * 43},           # Title
+    'cart':             {'format': '4s', 'data': b' ' * 4},             # Cart
+    'padd':             {'format': 'c', 'data': b' '},                  # Padding
+    'asclen':           {'format': '5s', 'data': b"99:99"},             # SEC Tone? MM:SS
+    'start_seconds':    {'format': 'h', 'data': 0},                     # INTRO?
+    'start_hundred':    {'format': 'h', 'data': 0},                     # INTRO?
+    'end_seconds':      {'format': 'h', 'data': 9999},                  # SEC Tone?
+    'end_hundred':      {'format': 'h', 'data': 9999},                  # SEC Tone?
+    'start_date':       {'format': '6s', 'data': b"0" * 6},             # Expiry start date MMDDYY
+    'kill_date':        {'format': '6s', 'data': b"9" * 6},             # Expiry end date MMDDYY
+    'start_hour':       {'format': 'b', 'data': -128},                  # Expiry start hour (only the hour is used)
+    'kill_hour':        {'format': 'b', 'data': -128},                  # Expiry end hour (only the hour is used)
+    'digital':          {'format': 'c', 'data': b'A'},                  # Always 'A' = Analog
+    'sampleRate':       {'format': 'h', 'data': 0},                     # From FMT Header
+    'stereo':           {'format': 'c', 'data': b'S'},                  # From FMT Header
+    'compression':      {'format': 'B', 'data': 10},                    # From FMT Header
+    'eomstart':         {'format': 'l', 'data': 99},                    # EOM?
+    'eomlength':        {'format': 'h', 'data': 0},                     # EOM?
+    'attrib2':          {'format': 'L', 'data': 264},                   # ?
+    'future1':          {'format': '12s', 'data': bytes([0] * 12)},     # padding..
+    'cfcolo':           {'format': 'L', 'data': 0},                     # useless
+    'ccolo':            {'format': 'L', 'data': 0},                     # useless
+    'segeompos':        {'format': 'l', 'data': 0},                     # what does this do?
+    'vtstartsec':       {'format': 'h', 'data': 0},                     # Padding
+    'vtstarthun':       {'format': 'h', 'data': 0},                     # Padding
+    'pcat':             {'format': '3s', 'data': b" " * 3},             # Padding
+    'pcopy':            {'format': '4s', 'data': b" " * 4},             # Padding
+    'ppadd':            {'format': 'c', 'data': b' '},                  # Padding
+    'pocat':            {'format': '3s', 'data': b" " * 3},             # Padding
+    'pocopy':           {'format': '4s', 'data': b" " * 4},             # Padding
+    'popadd':           {'format': 'c', 'data': b' '},                  # Padding
+    'hrcanplay':        {'format': '21s', 'data': bytes([255] * 21)},   # ?
+    'future2':          {'format': '108s', 'data': bytes([0] *108)},    # Padding
+    'artist':           {'format': '34s', 'data': b" " * 34},           # ?
+    'trivia':           {'format': '34s', 'data': b" " * 34},           # ?
+    'intro':            {'format': '2s', 'data': b" " * 2},             # Padding
+    'end':              {'format': 'c', 'data': b' '},                  # Padding
+    'year':             {'format': '4s', 'data': b" " * 4},             # ?
+    'obsolete2':        {'format': 'c', 'data': bytes([0])},            # Padding
+    'record_hour':      {'format': 'b', 'data': 0},                     # ?
+    'record_date':      {'format': '6s', 'data': b" " * 6},             # ?
+    'mpegrate':         {'format': 'h', 'data': 0},                     # Padding
+    'pitch':            {'format': 'H', 'data': 32768},                 # Padding
+    'playlevel':        {'format': 'H', 'data': 21845},                 # Padding
+    'lenvalid':         {'format': 'B', 'data': 0},                     # Padding
+    'filelength':       {'format': 'L', 'data': 0},                     # Padding
+    'newplaylevel':     {'format': 'H', 'data': 33768},                 # Padding
+    'chopsize':         {'format': 'L', 'data': 0},                     # Padding
+    'vteomovr':         {'format': 'L', 'data': 0},                     # Padding
+    'desiredlen':       {'format': 'L', 'data': 0},                     # Padding
+    'triggers1':        {'format': 'L', 'data': 0},                     # Padding
+    'triggers2':        {'format': 'L', 'data': 0},                     # Padding
+    'triggers3':        {'format': 'L', 'data': 0},                     # Padding
+    'category':         {'format': '4s', 'data': bytes([0] * 4)},       # ?
+    'fillout':          {'format': '33s', 'data': bytes([0] * 33)},     # Padding
 }
 
 def generate_format(chunk: dict) -> str:
