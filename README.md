@@ -42,7 +42,11 @@ Use the CartChunk class to write a new copy with the CART CHUNK (currently, only
 
 
 ```
+from cart_chunk import NewCart
+
 new_file = Path('/path/to/new/file.wav')
 
-wav.write_copy(new_file, 'artist', 'title')
+new_cart = NewCart(new_file, 'artist', 'title')
+
+wav.write_copy(new_cart)
 ```
