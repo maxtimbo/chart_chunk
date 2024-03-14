@@ -17,6 +17,8 @@ class NewCart:
     filename: pathlib.Path
     artist: str             = None
     title: str              = None
+    trivia: str             = None
+    year: int               = None
     category: str           = None
     cart: str               = None
     intro: float            = None
@@ -145,18 +147,43 @@ class CartChunk:
             self.scott_data[k] = v['data']
 
         if new_file.artist is not None:
-            self.scott_data['artist'] = new_file.artist.ljust(34).encode()
+            if len(new_file.artist) > 34:
+                raise
+            else:
+                self.scott_data['artist'] = new_file.artist.ljust(34).encode()
 
         if new_file.title is not None:
-            self.scott_data['title'] = new_file.title.ljust(43).encode()
+            if len(new_file.title) > 43:
+                raise
+            else:
+                self.scott_data['title'] = new_file.title.ljust(43).encode()
+
+        if new_file.trivia is not None:
+            if len(new_file.trivia) > 34:
+                raise
+            else:
+                self.scott_data['trivia'] = new_file.trivia.ljust(34).encode()
+
+        if new_file.year is not None:
+            if len(str(new_file.year)) > 4:
+                raise
+            else:
+                self.scott_data['year'] = str(new_file.year).ljust(4).encode()
 
         if new_file.cart is not None:
-            self.scott_data['cart'] = new_file.cart.encode()
+            if len(new_file.cart) > 4:
+                raise
+            else:
+                self.scott_data['cart'] = new_file.cart.encode()
 
         if new_file.category is not None:
-            self.scott_data['category'] = new_file.category.encode()
+            if len(new_file.category) > 4:
+                raise
+            else:
+                self.scott_data['category'] = new_file.category.encode()
 
         duration = datetime.strftime(datetime.strptime(f'{self.wave_data["duration"]:.2f}', '%S.%f'), '%M:%S')
+        self.scott_data['asclen'] = duration.rjust(5).encode()
 
         # intro int
         if new_file.intro is not None:
@@ -164,32 +191,38 @@ class CartChunk:
                 raise
             else:
                 self.scott_data['start_seconds'] = int(new_file.intro)
-                self.scott_data['start_hundreds'] = int((new_file.intro % 1) * 100)
+                self.scott_data['start_hundred'] = int((new_file.intro % 1) * 100)
 
         # sec float
         if new_file.sec is not None:
-            sec = datetime.strftime(datetime.strptime(f'{new_file.sec:.2f}', '%S.%f'), '%M:%S')
-            if sec > duration:
+            if new_file.sec > self.wave_data['duration']:
                 raise
             else:
-                self.scott_data['asclen'] = sec.rjust(5).encode()
+                self.scott_data['eomstart'] = int(new_file.sec * 10)
+                self.scott_data['eomlength'] = int(((new_file.sec * 10) % 1) * 100)
         else:
-            self.scott_data['asclen'] = duration.rjust(5).encode()
+            self.scott_data['eomstart'] = int(self.wave_data['duration'] * 10)
+            self.scott_data['eomlength'] = int(((self.wave_data['duration'] * 10) % 1) * 100)
 
         # eom float
+        if new_file.eom is not None:
+            if new_file.eom > self.wave_data['duration']:
+                raise
+            else:
+                self.scott_data['end_seconds'] = int(new_file.eom)
+                self.scott_data['end_hundred'] = int((new_file.eom % 1) * 100)
+        else:
+            self.scott_data['end_seconds'] = int(self.wave_data['duration'])
+            self.scott_data['end_hundred'] = int((self.wave_data['duration'] % 1) * 100)
 
-        self.scott_data['end_seconds'] = int(self.wave_data['duration'])
-        self.scott_data['end_hundred'] = int((self.wave_data['duration'] % 1) * 100)
-        self.scott_data['eomstart'] = int(self.wave_data['duration'] * 10)
-        self.scott_data['eomlength'] = int(((self.wave_data['duration'] * 10) % 1) * 100)
 
         if new_file.start_timestamp is not None:
-            self.scott_data['start_date'] = new_file.start_timestamp[0]
-            self.scott_data['start_hour'] = new_file.start_timestamp[1]
+            self.scott_data['start_date'] = str(new_file.start_timestamp[0]).encode()
+            self.scott_data['start_hour'] = new_file.start_timestamp[1] - 128
 
         if new_file.end_timestamp is not None:
-            self.scott_data['kill_date'] = new_file.end_timestamp[0]
-            self.scott_data['kill_hour'] = new_file.end_timestamp[1]
+            self.scott_data['kill_date'] = str(new_file.end_timestamp[0]).encode()
+            self.scott_data['kill_hour'] = new_file.end_timestamp[1] - 128
 
         self.scott_data['sampleRate'] = int(self.fmt_data['sampleRate'] / 100)
 
@@ -206,7 +239,12 @@ class CartChunk:
         f, s = generate_format(scott_chunk)
         scott = struct.pack(f, *self.scott_data.values())
 
-        with open(new_file.filename, 'wb') as fh:
+        if new_file.category is not None and new_file.cart is not None:
+            cart_file = pathlib.Path(new_file.filename.parents[0], new_file.category + new_file.cart + '.wav')
+        else:
+            cart_file = new_file.filename
+
+        with open(cart_file, 'wb') as fh:
             fh.write(riff)
             fh.write(fmt)
             fh.write(scott)

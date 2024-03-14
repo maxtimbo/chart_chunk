@@ -79,11 +79,19 @@ scott_chunk = {
     'title':            {'format': '43s', 'data': b' ' * 43},           # Title
     'cart':             {'format': '4s', 'data': b' ' * 4},             # Cart
     'padd':             {'format': 'c', 'data': b' '},                  # Padding
-    'asclen':           {'format': '5s', 'data': b"99:99"},             # SEC Tone? MM:SS
-    'start_seconds':    {'format': 'h', 'data': 0},                     # INTRO?
-    'start_hundred':    {'format': 'h', 'data': 0},                     # INTRO?
-    'end_seconds':      {'format': 'h', 'data': 9999},                  # SEC Tone?
-    'end_hundred':      {'format': 'h', 'data': 9999},                  # SEC Tone?
+    'asclen':           {'format': '5s', 'data': b"99:99"},             # Duration of the audio
+    'start_seconds':    {'format': 'h', 'data': 0},                     # INTRO
+    'start_hundred':    {'format': 'h', 'data': 0},                     # INTRO
+                                                                        # Intro and EOD are related.
+                                                                        #
+                                                                        #  marker          marker
+                                                                        #    \/              \/
+                                                                        # | INTRO | ----- | EOD |
+                                                                        #             ^
+                                                                        #     this length = eod
+                                                                        #
+    'end_seconds':      {'format': 'h', 'data': 9999},                  # EOD
+    'end_hundred':      {'format': 'h', 'data': 9999},                  # EOD
     'start_date':       {'format': '6s', 'data': b"0" * 6},             # Expiry start date MMDDYY
     'kill_date':        {'format': '6s', 'data': b"9" * 6},             # Expiry end date MMDDYY
     'start_hour':       {'format': 'b', 'data': -128},                  # Expiry start hour (only the hour is used)
@@ -92,8 +100,8 @@ scott_chunk = {
     'sampleRate':       {'format': 'h', 'data': 0},                     # From FMT Header
     'stereo':           {'format': 'c', 'data': b'S'},                  # From FMT Header
     'compression':      {'format': 'B', 'data': 10},                    # From FMT Header
-    'eomstart':         {'format': 'l', 'data': 99},                    # EOM?
-    'eomlength':        {'format': 'h', 'data': 0},                     # EOM?
+    'eomstart':         {'format': 'l', 'data': 99},                    # SEC
+    'eomlength':        {'format': 'h', 'data': 0},                     # SEC
     'attrib2':          {'format': 'L', 'data': 264},                   # ?
     'future1':          {'format': '12s', 'data': bytes([0] * 12)},     # padding..
     'cfcolo':           {'format': 'L', 'data': 0},                     # useless
@@ -129,7 +137,7 @@ scott_chunk = {
     'triggers1':        {'format': 'L', 'data': 0},                     # Padding
     'triggers2':        {'format': 'L', 'data': 0},                     # Padding
     'triggers3':        {'format': 'L', 'data': 0},                     # Padding
-    'category':         {'format': '4s', 'data': bytes([0] * 4)},       # ?
+    'category':         {'format': '4s', 'data': bytes([0] * 4)},       # Category
     'fillout':          {'format': '33s', 'data': bytes([0] * 33)},     # Padding
 }
 
