@@ -3,7 +3,9 @@ import struct
 import pathlib
 import wave
 
-from dataclasses import dataclass
+import numpy as np
+
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 try:
@@ -15,17 +17,26 @@ except:
 @dataclass
 class NewCart:
     filename: pathlib.Path
-    artist: str             = None
-    title: str              = None
-    trivia: str             = None
-    year: int               = None
-    category: str           = None
-    cart: str               = None
-    intro: float            = None
-    sec: float              = None
-    eom: float              = None
-    start_timestamp: tuple  = None
-    end_timestamp: tuple    = None
+    artist: str                 = None
+    title: str                  = None
+    trivia: str                 = None
+    year: int                   = None
+    category: str               = None
+    cart: str                   = None
+    intro: float                = None
+    sec: float                  = None
+    eom: float                  = None
+    start_timestamp: tuple      = None
+    end_timestamp: tuple        = None
+    hrcanplay: list[list[int]]  = field(default_factory = lambda: [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ])
 
 
 class CartChunk:
@@ -96,18 +107,20 @@ class CartChunk:
             #skip_fields.extend(range(9, 17, 1))
 
             for i, field, data in zip(range(len(scott_data)), scott_chunk, scott_data):
-                if 'attrib' in field:
-                    self.scott_data[field] = bin(data)
-                elif i == 36:
-                    self.scott_data['hrcanplay'] = [bin(x) for x in struct.unpack('@21B', data)]
-                elif i in skip_fields:
-                    pass
-                elif 'future' in field:
-                    pass
-                elif i in [51, 52, 47, 48]:
-                    self.scott_data[field] = bin(data)
-                else:
-                    self.scott_data[field] = data
+                self.scott_data[field] = data
+                print(f'{field:<20}:{data}')
+                #if 'attrib' in field:
+                #    self.scott_data[field] = bin(data)
+                #elif i == 36:
+                #    self.scott_data['hrcanplay'] = [bin(x) for x in struct.unpack('@21B', data)]
+                #elif i in skip_fields:
+                #    pass
+                #elif 'future' in field:
+                #    pass
+                #elif i in [51, 52, 47, 48]:
+                #    self.scott_data[field] = bin(data)
+                #else:
+                #    self.scott_data[field] = data
 
         else:
             self.is_scott = False
@@ -129,7 +142,7 @@ class CartChunk:
         except:
             raise
 
-    def write_copy(self, new_file: NewCart) -> None:
+    def write_copy(self, new_file: NewCart) -> pathlib.Path:
         f, s = generate_format(riff_chunk)
 
         self.riff_data['size'] = self.data_meta['datasize'] + 470
@@ -224,6 +237,10 @@ class CartChunk:
             self.scott_data['kill_date'] = str(new_file.end_timestamp[0]).encode()
             self.scott_data['kill_hour'] = new_file.end_timestamp[1] - 128
 
+        print(self.scott_data['hrcanplay'])
+        self.scott_data['hrcanplay'] = bytes(np.packbits(new_file.hrcanplay, bitorder = 'big'))
+        print(self.scott_data['hrcanplay'])
+
         self.scott_data['sampleRate'] = int(self.fmt_data['sampleRate'] / 100)
 
         if self.fmt_data['chan'] == 1:
@@ -250,6 +267,8 @@ class CartChunk:
             fh.write(scott)
             fh.write(data)
             fh.write(self.audio)
+
+        return cart_file
 
     @staticmethod
     def convert_timestamp(date: str, hour_value: int) -> datetime:
