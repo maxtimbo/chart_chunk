@@ -52,13 +52,15 @@ class CartChunk:
         self.data_end: int      = 0
 
         self.is_scott: bool     = False
+        self.is_bext: bool      = False
         self.get_riff_data()
-        self.get_data_size()
+        self.get_bext_data()
         self.get_scott_data()
+        self.get_data_size()
 
-    def get_header(self) -> io.BytesIO:
+    def get_header(self, header_size: int = 512) -> io.BytesIO:
         with open(self.filename, 'rb') as fh:
-            header = io.BytesIO(fh.read(512))
+            header = io.BytesIO(fh.read(header_size))
 
         with wave.open(str(self.filename), 'rb') as fh:
             self.wave_data['channels']      = fh.getnchannels()
@@ -93,6 +95,19 @@ class CartChunk:
         for field, data in zip(chunk, d):
             self.fmt_data[field] = data
 
+    def get_bext_data(self) -> None:
+        self.header.seek(0)
+        index = self.header.read().find(b'bext')
+        if index != -1:
+            self.is_bext = True
+            self.header.seek(index)
+            fstring = '<4sl'
+            bext_meta = struct.unpack(fstring, self.header.read(struct.calcsize(fstring)))
+            for data in bext_meta:
+                print(f'{data = }')
+
+            self.header = self.get_header(512 + bext_meta[1])
+
     def get_scott_data(self) -> None:
         self.header.seek(0)
         index = self.header.read().find(b'scot')
@@ -103,24 +118,8 @@ class CartChunk:
 
             scott_data = struct.unpack(f, self.header.read(s))
 
-            skip_fields = []
-            #skip_fields.extend(range(9, 17, 1))
-
             for i, field, data in zip(range(len(scott_data)), scott_chunk, scott_data):
                 self.scott_data[field] = data
-                print(f'{field:<20}:{data}')
-                #if 'attrib' in field:
-                #    self.scott_data[field] = bin(data)
-                #elif i == 36:
-                #    self.scott_data['hrcanplay'] = [bin(x) for x in struct.unpack('@21B', data)]
-                #elif i in skip_fields:
-                #    pass
-                #elif 'future' in field:
-                #    pass
-                #elif i in [51, 52, 47, 48]:
-                #    self.scott_data[field] = bin(data)
-                #else:
-                #    self.scott_data[field] = data
 
         else:
             self.is_scott = False
@@ -195,7 +194,11 @@ class CartChunk:
             else:
                 self.scott_data['category'] = new_file.category.encode()
 
-        duration = datetime.strftime(datetime.strptime(f'{self.wave_data["duration"]:.2f}', '%S.%f'), '%M:%S')
+        duration = datetime.strftime(
+            datetime.strptime(
+                str(timedelta(seconds = self.wave_data['duration'])),
+                '%H:%M:%S.%f'),
+                '%M:%S')
         self.scott_data['asclen'] = duration.rjust(5).encode()
 
         # intro int
