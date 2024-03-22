@@ -103,9 +103,6 @@ class CartChunk:
             self.header.seek(index)
             fstring = '<4sl'
             bext_meta = struct.unpack(fstring, self.header.read(struct.calcsize(fstring)))
-            for data in bext_meta:
-                print(f'{data = }')
-
             self.header = self.get_header(512 + bext_meta[1])
 
     def get_scott_data(self) -> None:
@@ -240,9 +237,7 @@ class CartChunk:
             self.scott_data['kill_date'] = str(new_file.end_timestamp[0]).encode()
             self.scott_data['kill_hour'] = new_file.end_timestamp[1] - 128
 
-        print(self.scott_data['hrcanplay'])
         self.scott_data['hrcanplay'] = bytes(np.packbits(new_file.hrcanplay, bitorder = 'big'))
-        print(self.scott_data['hrcanplay'])
 
         self.scott_data['sampleRate'] = int(self.fmt_data['sampleRate'] / 100)
 
