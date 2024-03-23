@@ -191,12 +191,20 @@ class CartChunk:
             else:
                 self.scott_data['category'] = new_file.category.encode()
 
-        duration = datetime.strftime(
-            datetime.strptime(
-                str(timedelta(seconds = self.wave_data['duration'])),
-                '%H:%M:%S.%f'),
-                '%M:%S')
-        self.scott_data['asclen'] = duration.rjust(5).encode()
+        try:
+            duration = datetime.strftime(
+                datetime.strptime(
+                    str(timedelta(seconds = self.wave_data['duration'])),
+                    '%H:%M:%S.%f'),
+                    '%M:%S')
+        except:
+            duration = datetime.strftime(
+                datetime.strptime(
+                    str(timedelta(seconds = self.wave_data['duration'])),
+                    '%H:%M:%S'),
+                    '%M:%S')
+        finally:
+            self.scott_data['asclen'] = duration.rjust(5).encode()
 
         # intro int
         if new_file.intro is not None:
