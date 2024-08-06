@@ -38,7 +38,20 @@ for key, value in wav.data_meta.items():
     print(f'{key:<20}: {value}')
 ```
 
-Use the CartChunk class to write a new copy with the CART CHUNK (currently, only artist and title fields are supported):
+Use the CartChunk class to write a new copy with the CART CHUNK. The following keyword args are available:
+
+- `artist`          str
+- `title`           str
+- `trivia`          str
+- `year`            int
+- `category`        str
+- `cart`            str
+- `intro`           float
+- `sec`             float
+- `eom`             float
+- `start_timestamp` tuple
+- `end_timestamp`   tuple
+- `hrcanplay`       list[list[int]]
 
 
 ```
@@ -46,7 +59,7 @@ from cart_chunk import NewCart
 
 new_file = Path('/path/to/new/file.wav')
 
-new_cart = NewCart(new_file, 'artist', 'title')
+new_cart = NewCart(new_file, artist='artist', title='title')
 
 wav.write_copy(new_cart)
 ```
