@@ -6,6 +6,7 @@ __all__ = [
     'pcm_chunk',
     'mpeg_chunk',
     'new_mpeg_chunk',
+    'cart_chunk',
     'scott_chunk',
     'fact_chunk',
     'data_chunk',
@@ -68,6 +69,22 @@ fact_chunk = {
 data_chunk = {
     'data':             {'format': '4s'},
     'datasize':         {'format': 'l'}
+}
+
+cart_chunk = {
+    'cart_format':      {'format': '13s', 'data': b'\x00cart\x00\x08\x00\x00\x30\x31\x30\x31'},
+    'title':            {'format': '64s', 'data': b'\x00' * 64},
+    'artist':           {'format': '64s', 'data': b'\x00' * 64},
+    'cart':             {'format': '64s', 'data': b'\x00' * 64},
+    'client':           {'format': '64s', 'data': b'\x00' * 64},
+    'category':         {'format': '64s', 'data': b'\x00' * 64},
+    'class':            {'format': '64s', 'data': b'\x00' * 64},
+    'out_cue':          {'format': '64s', 'data': b'\x00' * 64},
+    'start_date':       {'format': '18s', 'data': b'1900/01/0100:00:00'},
+    'end_date':         {'format': '18s', 'data': b'2199/12/3100:00:00'},
+    'producer_id':      {'format': '64s', 'data': b'\x00' * 64},
+    'producer_vers':    {'format': '64s', 'data': b'\x00' * 64},
+    'user_defined':     {'format': '64s', 'data': b'\x00' * 64},
 }
 
 scott_chunk = {

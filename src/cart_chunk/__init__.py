@@ -1,4 +1,4 @@
 try:
-    from cart_chunk import CartChunk, NewCart
+    from cart_chunk import CartChunk, CartTouch, NewCart
 except:
-    from .cart_chunk import CartChunk, NewCart
+    from .cart_chunk import CartChunk, CartTouch, NewCart

@@ -38,7 +38,6 @@ class NewCart:
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ])
 
-
 class CartChunk:
     def __init__(self, filename: pathlib.Path) -> None:
         self.filename = filename
@@ -290,3 +289,63 @@ class CartChunk:
         return timestamp
 
 
+class CartTouch(CartChunk):
+    def write_copy(self, new_file: NewCart) -> pathlib.Path:
+        f, s = generate_format(riff_chunk)
+
+        self.riff_data['size'] = self.data_meta['datasize'] + 627
+        riff = struct.pack(f, *self.riff_data.values())
+        f, s = generate_format(fmt_chunk | pcm_chunk)
+        f += 'xx'
+        self.fmt_data['fmtsize'] = 18
+
+        fmt = struct.pack(f, *self.fmt_data.values())
+
+        f, s = generate_format(data_chunk)
+        data = struct.pack(f, *self.data_meta.values())
+
+        for k, v in cart_chunk.items():
+            self.scott_data[k] = v['data']
+
+        if new_file.artist is not None:
+            if len(new_file.artist) > 64:
+                raise
+            else:
+                self.scott_data['artist'] = new_file.artist.ljust(64, '\x00').encode()
+
+        if new_file.title is not None:
+            if len(new_file.title) > 64:
+                raise
+            else:
+                self.scott_data['title'] = new_file.title.ljust(64, '\x00').encode()
+
+        if new_file.category is not None:
+            if len(new_file.category) > 64:
+                raise
+            else:
+                self.scott_data['category'] = new_file.category.ljust(64, '\x00').encode()
+
+        if new_file.cart is not None:
+            if len(new_file.cart) > 64:
+                raise
+            else:
+                self.scott_data['cart'] = new_file.cart.ljust(64, '\x00').encode()
+
+
+        f, s = generate_format(cart_chunk)
+        cart_touch = struct.pack(f, *self.scott_data.values())
+        cart_touch += b'\x00\x80'
+        cart_touch += b'\x00' * 64
+
+        if new_file.category is not None and new_file.cart is not None:
+            cart_file = pathlib.Path(new_file.filename.parents[0], new_file.category + new_file.cart + '.wav')
+        else:
+            cart_file = new_file.filename
+
+        with open(cart_file, 'wb') as fh:
+            fh.write(riff)
+            fh.write(fmt)
+            fh.write(data)
+            fh.write(self.audio)
+            fh.write(cart_touch)
+        return cart_file
