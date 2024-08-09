@@ -140,7 +140,7 @@ class CartChunk:
     def write_copy(self, new_file: NewCart) -> pathlib.Path:
         f, s = generate_format(riff_chunk)
 
-        self.riff_data['size'] = self.data_meta['datasize'] + 470
+        self.riff_data['size'] = self.data_meta['datasize'] + 2068
         riff = struct.pack(f, *self.riff_data.values())
         f, s = generate_format(fmt_chunk | pcm_chunk)
         f += 'xx'
@@ -334,8 +334,6 @@ class CartTouch(CartChunk):
 
         f, s = generate_format(cart_chunk)
         cart_touch = struct.pack(f, *self.scott_data.values())
-        cart_touch += b'\x00\x80'
-        cart_touch += b'\x00' * 64
 
         if new_file.category is not None and new_file.cart is not None:
             cart_file = pathlib.Path(new_file.filename.parents[0], new_file.category + new_file.cart + '.wav')
@@ -345,7 +343,7 @@ class CartTouch(CartChunk):
         with open(cart_file, 'wb') as fh:
             fh.write(riff)
             fh.write(fmt)
+            fh.write(cart_touch)
             fh.write(data)
             fh.write(self.audio)
-            fh.write(cart_touch)
         return cart_file

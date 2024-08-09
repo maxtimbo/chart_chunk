@@ -72,7 +72,9 @@ data_chunk = {
 }
 
 cart_chunk = {
-    'cart_format':      {'format': '13s', 'data': b'\x00cart\x00\x08\x00\x00\x30\x31\x30\x31'},
+    'cart_format':      {'format': '4s', 'data': b'cart'},
+    'cKSize':           {'format': 'l', 'data': 2068},
+    'version':          {'format': '4s', 'data': b'0101'},
     'title':            {'format': '64s', 'data': b'\x00' * 64},
     'artist':           {'format': '64s', 'data': b'\x00' * 64},
     'cart':             {'format': '64s', 'data': b'\x00' * 64},
@@ -80,11 +82,17 @@ cart_chunk = {
     'category':         {'format': '64s', 'data': b'\x00' * 64},
     'class':            {'format': '64s', 'data': b'\x00' * 64},
     'out_cue':          {'format': '64s', 'data': b'\x00' * 64},
-    'start_date':       {'format': '18s', 'data': b'1900/01/0100:00:00'},
-    'end_date':         {'format': '18s', 'data': b'2199/12/3100:00:00'},
+    'start_date':       {'format': '10s', 'data': b'1900/01/01'},
+    'start_time':       {'format': '8s', 'data': b'00:00:00'},
+    'end_date':         {'format': '10s', 'data': b'2199/12/31'},
+    'end_time':         {'format': '8s', 'data': b'00:00:00'},
     'producer_id':      {'format': '64s', 'data': b'\x00' * 64},
     'producer_vers':    {'format': '64s', 'data': b'\x00' * 64},
     'user_defined':     {'format': '64s', 'data': b'\x00' * 64},
+    'dwLevelReference': {'format': 'l', 'data': 0},
+    'post_timer':       {'format': '8s', 'data': bytes([0] * 8)},
+    'reserved':         {'format': '276s', 'data': b'\x00' * 276},
+    'url':              {'format': '1024s', 'data': b'\x00' * 1024},
 }
 
 scott_chunk = {
