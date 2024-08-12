@@ -17,9 +17,9 @@ def bin_str(s: str) -> str:
     return ''.join(format(ord(char), '08b') for char in s)
 
 riff_chunk = {
-    'riff':             {'format': '4s'},
-    'size':             {'format': 'l'},
-    'type':             {'format': '4s'}
+    'riff':             {'format': '4s', 'data': b'RIFF'},
+    'size':             {'format': 'l', 'data': 0},
+    'type':             {'format': '4s', 'data': b'WAVE'}
 }
 
 fmt_chunk = {
@@ -73,7 +73,7 @@ data_chunk = {
 
 cart_chunk = {
     'cart_format':      {'format': '4s', 'data': b'cart'},
-    'cKSize':           {'format': 'l', 'data': 2068},
+    'cKSize':           {'format': 'l', 'data': 2000},
     'version':          {'format': '4s', 'data': b'0101'},
     'title':            {'format': '64s', 'data': b'\x00' * 64},
     'artist':           {'format': '64s', 'data': b'\x00' * 64},
@@ -166,8 +166,8 @@ scott_chunk = {
     'fillout':          {'format': '33s', 'data': bytes([0] * 33)},     # Padding
 }
 
-def generate_format(chunk: dict) -> str:
-    format_string = '<'
+def generate_format(chunk: dict) -> tuple[str, int]:
+    format_string = '<'                             # Little-endian format
     for k, v in chunk.items():
         format_string += v['format']
 

@@ -48,18 +48,39 @@ class CartChunk:
         self.fmt_data: dict     = {}
         self.data_meta: dict    = {}
         self.scott_data: dict   = {}
+        self.cart_data: dict    = {}
         self.data_end: int      = 0
 
         self.is_scott: bool     = False
         self.is_bext: bool      = False
+        self.is_cart: bool      = False
         self.get_riff_data()
         self.get_bext_data()
         self.get_scott_data()
+        self.get_cart_data()
         self.get_data_size()
 
     def get_header(self, header_size: int = 512) -> io.BytesIO:
+        offset = 0
+        accumulate_header = b''
+
         with open(self.filename, 'rb') as fh:
-            header = io.BytesIO(fh.read(header_size))
+            while True:
+                fh.seek(offset)
+                current_chunk = fh.read(header_size)
+                accumulate_header += current_chunk
+
+                index = accumulate_header.find(b'data')
+                if index != -1:
+                    break
+
+                if offset + header_size >= self.filename.stat().st_size:
+                    raise ValueError("data chunk not found in the file")
+
+                offset += header_size
+
+        header = io.BytesIO(accumulate_header)
+        header.seek(0)
 
         with wave.open(str(self.filename), 'rb') as fh:
             self.wave_data['channels']      = fh.getnchannels()
@@ -74,6 +95,7 @@ class CartChunk:
         return header
 
     def get_riff_data(self) -> None:
+        self.header.seek(0)
         f, s = generate_format(riff_chunk)
         d = struct.unpack(f, self.header.read(s))
         for field, data in zip(riff_chunk, d):
@@ -120,6 +142,21 @@ class CartChunk:
         else:
             self.is_scott = False
 
+    def get_cart_data(self) -> None:
+        self.header.seek(0)
+        index = self.header.read().find(b'cart')
+        if index != -1:
+            self.is_cart = True
+            f, s = generate_format(cart_chunk)
+            self.header.seek(index)
+            cart_data = struct.unpack(f, self.header.read(s))
+
+            for i, field, data in zip(range(len(cart_data)), cart_chunk, cart_data):
+                self.cart_data[field] = data
+
+        else:
+            self.is_cart = False
+
     def get_data_size(self) -> None:
         self.header.seek(0)
         index = self.header.read().find(b'data')
@@ -140,7 +177,7 @@ class CartChunk:
     def write_copy(self, new_file: NewCart) -> pathlib.Path:
         f, s = generate_format(riff_chunk)
 
-        self.riff_data['size'] = self.data_meta['datasize'] + 2068
+        self.riff_data['size'] = self.data_meta['datasize'] + 470
         riff = struct.pack(f, *self.riff_data.values())
         f, s = generate_format(fmt_chunk | pcm_chunk)
         f += 'xx'
@@ -275,6 +312,52 @@ class CartChunk:
 
         return cart_file
 
+    def write_cart(self, new_file: NewCart) -> pathlib.Path:
+        fmt_pcm_data = {**fmt_chunk, **pcm_chunk}
+        f, s_fmt = generate_format(fmt_pcm_data)
+        fmt = struct.pack(f, *self.fmt_data.values())
+        fmt_chunk_size = 8 + s_fmt
+        data_chunk_size = 8 + self.data_meta['datasize']
+        cart_chunk_size = struct.calcsize(generate_format(cart_chunk)[0])
+        print(cart_chunk_size)
+
+        self.riff_data['size'] = fmt_chunk_size + data_chunk_size + cart_chunk_size
+        print(self.riff_data['size'])
+
+        f, s = generate_format(riff_chunk)
+        riff = struct.pack(f, *self.riff_data.values())
+
+        for k, v in cart_chunk.items():
+            self.cart_data[k] = v['data']
+
+        if new_file.artist is not None:
+            self.cart_data['artist'] = new_file.artist.ljust(64, '\x00').encode()
+        if new_file.title is not None:
+            self.cart_data['title'] = new_file.title.ljust(64, '\x00').encode()
+        if new_file.category is not None:
+           self.cart_data['category'] = new_file.category.ljust(64, '\x00').encode()
+        if new_file.cart is not None:
+           self.cart_data['cart'] = new_file.cart.ljust(64, '\x00').encode()
+
+        f, s = generate_format(cart_chunk)
+        cart_touch = struct.pack(f, *self.cart_data.values())
+
+        f_data, s_data = generate_format(data_chunk)
+        data_header = struct.pack(f_data, *self.data_meta.values())
+
+        if new_file.category is not None and new_file.cart is not None:
+            cart_file = pathlib.Path(new_file.filename.parents[0], new_file.category + new_file.cart + '.wav')
+        else:
+            cart_file = new_file.filename
+
+        with open(cart_file, 'wb') as fh:
+            fh.write(riff)
+            fh.write(fmt)
+            fh.write(data_header)
+            fh.write(self.audio)
+            fh.write(cart_touch)
+        return cart_file
+
     @staticmethod
     def convert_timestamp(date: str, hour_value: int) -> datetime:
         hour = hour_value + 128
@@ -287,63 +370,3 @@ class CartChunk:
         else:
             timestamp = datetime.strptime(f'{date}{hours}', '%m%d%y%H%M%S')
         return timestamp
-
-
-class CartTouch(CartChunk):
-    def write_copy(self, new_file: NewCart) -> pathlib.Path:
-        f, s = generate_format(riff_chunk)
-
-        self.riff_data['size'] = self.data_meta['datasize'] + 627
-        riff = struct.pack(f, *self.riff_data.values())
-        f, s = generate_format(fmt_chunk | pcm_chunk)
-        f += 'xx'
-        self.fmt_data['fmtsize'] = 18
-
-        fmt = struct.pack(f, *self.fmt_data.values())
-
-        f, s = generate_format(data_chunk)
-        data = struct.pack(f, *self.data_meta.values())
-
-        for k, v in cart_chunk.items():
-            self.scott_data[k] = v['data']
-
-        if new_file.artist is not None:
-            if len(new_file.artist) > 64:
-                raise
-            else:
-                self.scott_data['artist'] = new_file.artist.ljust(64, '\x00').encode()
-
-        if new_file.title is not None:
-            if len(new_file.title) > 64:
-                raise
-            else:
-                self.scott_data['title'] = new_file.title.ljust(64, '\x00').encode()
-
-        if new_file.category is not None:
-            if len(new_file.category) > 64:
-                raise
-            else:
-                self.scott_data['category'] = new_file.category.ljust(64, '\x00').encode()
-
-        if new_file.cart is not None:
-            if len(new_file.cart) > 64:
-                raise
-            else:
-                self.scott_data['cart'] = new_file.cart.ljust(64, '\x00').encode()
-
-
-        f, s = generate_format(cart_chunk)
-        cart_touch = struct.pack(f, *self.scott_data.values())
-
-        if new_file.category is not None and new_file.cart is not None:
-            cart_file = pathlib.Path(new_file.filename.parents[0], new_file.category + new_file.cart + '.wav')
-        else:
-            cart_file = new_file.filename
-
-        with open(cart_file, 'wb') as fh:
-            fh.write(riff)
-            fh.write(fmt)
-            fh.write(cart_touch)
-            fh.write(data)
-            fh.write(self.audio)
-        return cart_file
