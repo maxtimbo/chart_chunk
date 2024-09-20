@@ -228,19 +228,34 @@ class CartChunk:
                 self.scott_data['category'] = new_file.category.encode()
 
         try:
-            duration = datetime.strftime(
-                datetime.strptime(
-                    str(timedelta(seconds = self.wave_data['duration'])),
-                    '%H:%M:%S.%f'),
-                    '%M:%S')
-        except:
-            duration = datetime.strftime(
-                datetime.strptime(
-                    str(timedelta(seconds = self.wave_data['duration'])),
-                    '%H:%M:%S'),
-                    '%M:%S')
+            duration = timedelta(seconds = self.wave_data['duration'])
+            duration_str = str(duration)
+            if '.' in duration_str:
+                minutes, seconds = divmod(duration.total_seconds(), 60)
+                duration = f'{int(minutes):02}:{seconds:05.2f}'
+            else:
+                duration = duration_str[-5:]
+        except Exception as e:
+            print(f'Error processing duration: {e}')
+            duration = '00:00'
+
         finally:
             self.scott_data['asclen'] = duration.rjust(5).encode()
+
+        #try:
+        #    duration = datetime.strftime(
+        #        datetime.strptime(
+        #            str(timedelta(seconds = self.wave_data['duration'])),
+        #            '%H:%M:%S.%f'),
+        #            '%M:%S')
+        #except:
+        #    duration = datetime.strftime(
+        #        datetime.strptime(
+        #            str(timedelta(seconds = self.wave_data['duration'])),
+        #            '%H:%M:%S'),
+        #            '%M:%S')
+        #finally:
+        #    self.scott_data['asclen'] = duration.rjust(5).encode()
 
         # intro int
         if new_file.intro is not None:
